@@ -22,21 +22,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    const botToken = process.env.EITAA_BOT_TOKEN;
-
+    // اگر دوست داشتی بعداً توکن بات رو استفاده کنیم
+    const botToken = process.env.EITAA_BOT_TOKEN || null;
     if (!botToken) {
-      // فعلاً بدون توکن هم اجازه می‌ده برای تست ایجاد شود
-      console.warn("EITAA_BOT_TOKEN تنظیم نشده است.");
+      console.warn("EITAA_BOT_TOKEN تنظیم نشده است (مشکلی برای نسخه فعلی نیست).");
     }
 
-    // TODO:
-    // در آینده این‌جا باید درخواست واقعی به API ایتا/بات بفرستیم
-    // و لینک واقعی اتاق کامنت را بگیریم.
-    // فعلاً برای تست یک لینک ساختگی می‌سازیم:
-
     const id = Date.now().toString();
-    const fakeSlug = "comment_" + id;
-    const commentLink = `https://eitaa.com/${fakeSlug}`;
+
+    // به‌دست آوردن دامنه‌ی فعلی (مثلاً taavita-eitaa-comments.vercel.app)
+    const host =
+      process.env.VERCEL_URL
+        ? "https://" + process.env.VERCEL_URL
+        : "https://taavita-eitaa-comments.vercel.app";
+
+    const commentLink = `${host}/comment.html?room=${id}`;
 
     const comment = {
       id,
