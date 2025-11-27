@@ -1,44 +1,32 @@
-// api/comments/add.js
-import { addComment } from "../../commentsStore.js";
+import { Redis } from "@upstash/redis";
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res
-      .status(405)
-      .json({ ok: false, error: "Method not allowed" });
-  }
-
   try {
-    const { postKey, text, name } = req.body || {};
-
-    if (!postKey || !text) {
-      return res
-        .status(400)
-        .json({ ok: false, error: "postKey و text الزامی است" });
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
     }
 
-    // اگر name نیامده بود، یک نام پیش‌فرض می‌گذاریم
-    const safeName =
-      name && name.trim() ? name.trim() : "کاربر مهمان";
+    const { roomId, name, message, timestamp } = req.body;
 
-    const now = Date.now();
+    if (!roomId || !message)
+      return res.status(400).json({ error: "Missing roomId or message" });
 
     const comment = {
-      id: now.toString(),
-      postKey,
-      text,
-      name: safeName,
-      createdAt: now
+      id: Date.now(),
+      name: name || "کاربر ناشناس",
+      message,
+      timestamp: timestamp || new Date().toISOString(),
     };
 
-    // ذخیره در Redis
-    await addComment(comment);
-
-    return res.status(200).json({ ok: true, comment });
+    await redis.lpush(`comments:${roomId}`, JSON.stringify(comment));
+    return res.status(200).json({ success: true, comment });
   } catch (err) {
-    console.error("Error in /api/comments/add:", err);
-    return res
-      .status(500)
-      .json({ ok: false, error: "خطای سرور در ذخیره کامنت" });
+    console.error("Add Error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 }
