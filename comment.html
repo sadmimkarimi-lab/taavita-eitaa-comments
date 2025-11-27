@@ -170,110 +170,90 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("📌 Script loaded");
 
-    // گرفتن roomId از لینک
-    const params = new URLSearchParams(window.location.search);
-    const roomId = params.get("room");
+  const params = new URLSearchParams(window.location.search);
+  const roomId = params.get("room");
 
-    console.log("🔑 roomId =", roomId);
+  if (!roomId) {
+    alert("خطا: roomId در لینک نیست");
+    return;
+  }
 
-    if (!roomId) {
-        alert("خطا: شناسه‌ی اتاق پیدا نشد.");
+  const commentsBox = document.getElementById("comments");
+  const nameInput = document.getElementById("name");
+  const messageInput = document.getElementById("message");
+  const sendBtn = document.getElementById("sendBtn");
+
+  // -------------------------------
+  // 📌 دریافت لیست کامنت‌ها
+  // -------------------------------
+  async function loadComments() {
+    try {
+      const res = await fetch(`/api/comments/list?roomId=${roomId}`);
+      if (!res.ok) throw new Error("List failed");
+
+      const data = await res.json();
+
+      commentsBox.innerHTML = "";
+      if (!data.comments || data.comments.length === 0) {
+        commentsBox.innerHTML = "<p class='empty'>اولین کامنت را شما ثبت کنید ✨</p>";
         return;
+      }
+
+      data.comments.forEach((c) => {
+        const div = document.createElement("div");
+        div.className = "comment-item";
+        div.innerHTML = `
+          <div class="c-header">
+              <span class="c-name">${c.name}</span>
+              <span class="c-time">${new Date(c.timestamp).toLocaleString("fa-IR")}</span>
+          </div>
+          <div class="c-body">${c.message}</div>
+        `;
+        commentsBox.appendChild(div);
+      });
+
+    } catch (err) {
+      commentsBox.innerHTML = "<p class='error'>خطا در دریافت کامنت‌ها</p>";
     }
+  }
 
-    const commentsBox = document.getElementById("comments");
-    const nameInput = document.getElementById("name");
-    const messageInput = document.getElementById("message");
-    const sendBtn = document.getElementById("sendBtn");
+  // -------------------------------
+  // 📌 ارسال کامنت
+  // -------------------------------
+  async function sendComment() {
+    const name = nameInput.value.trim() || "کاربر";
+    const message = messageInput.value.trim();
 
-    // --------------------------
-    // ⚡ دریافت لیست کامنت‌ها
-    // --------------------------
-    async function loadComments() {
-        console.log("🔄 Fetching comments...");
+    if (!message) return;
 
-        try {
-            const res = await fetch(`/api/comments/list?roomId=${roomId}`);
+    try {
+      const res = await fetch("/api/comments/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomId,
+          name,
+          message
+        })
+      });
 
-            console.log("📥 Response status:", res.status);
+      if (!res.ok) throw new Error("Add failed");
 
-            if (!res.ok) {
-                throw new Error(`HTTP error ${res.status}`);
-            }
+      messageInput.value = "";
+      loadComments();
 
-            const data = await res.json();
-            console.log("📦 Loaded comments:", data);
-
-            commentsBox.innerHTML = "";
-
-            if (!data.comments || data.comments.length === 0) {
-                commentsBox.innerHTML = "<p class='empty'>اولین نفری باش که کامنت می‌گذارد ✨</p>";
-                return;
-            }
-          
-
-            data.comments.forEach(c => {
-                const div = document.createElement("div");
-                div.className = "comment-item";
-                div.innerHTML = `
-                    <div class="c-header">
-                        <span class="c-name">${c.name}</span>
-                        <span class="c-time">${new Date(c.timestamp).toLocaleString("fa-IR")}</span>
-                    </div>
-                    <div class="c-body">${c.message}</div>
-                `;
-                commentsBox.appendChild(div);
-            });
-
-        } catch (err) {
-            console.error("❌ Error loading comments:", err);
-            commentsBox.innerHTML = "<p class='error'>خطا در دریافت کامنت‌ها</p>";
-        }
+    } catch (err) {
+      alert("خطا در ارسال پیام");
     }
+  }
 
-    // --------------------------
-    // ⚡ ارسال کامنت
-    // --------------------------
-    async function sendComment() {
-        const name = nameInput.value.trim() || "کاربر";
-        const msg = messageInput.value.trim();
+  sendBtn.onclick = sendComment;
 
-        if (!msg) return;
+  // رفرش هر ۳ ثانیه
+  loadComments();
+  setInterval(loadComments, 3000);
 
-        const payload = { roomId, name, message: msg };
-
-        console.log("📤 Sending:", payload);
-
-        try {
-            const res = await fetch("/api/comments/add", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
-            console.log("📥 Add Response:", res.status);
-
-            if (!res.ok) {
-                throw new Error(`Add failed: ${res.status}`);
-            }
-
-            messageInput.value = "";
-            loadComments();
-
-        } catch (err) {
-            console.error("❌ Error sending comment:", err);
-            alert("خطا در ارسال نظر");
-        }
-    }
-
-    sendBtn.addEventListener("click", sendComment);
-
-    // بارگذاری اولیه
-    loadComments();
-    // رفرش هر 3 ثانیه
-    setInterval(loadComments, 3000);
 });
 </script>
 </body>
