@@ -1,32 +1,20 @@
-// api/comments/list.js
-import { getCommentsByPostKey } from "../../commentsStore.js";
+import { Redis } from "@upstash/redis";
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
-    return res
-      .status(405)
-      .json({ ok: false, error: "Method not allowed" });
-  }
-
   try {
-    const { postKey } = req.query || {};
+    const { roomId } = req.query;
+    if (!roomId) return res.status(400).json({ error: "Missing roomId" });
 
-    if (!postKey) {
-      return res
-        .status(400)
-        .json({ ok: false, error: "postKey لازم است" });
-    }
-
-    const comments = await getCommentsByPostKey(postKey);
-
-    return res.status(200).json({
-      ok: true,
-      comments
-    });
+    const data = await redis.lrange(`comments:${roomId}`, 0, -1);
+    const comments = data.map((item) => JSON.parse(item));
+    return res.status(200).json({ comments });
   } catch (err) {
-    console.error("Error in /api/comments/list:", err);
-    return res
-      .status(500)
-      .json({ ok: false, error: "خطای سرور در خواندن کامنت‌ها" });
+    console.error("List Error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 }
