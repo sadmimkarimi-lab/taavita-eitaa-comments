@@ -1,0 +1,117 @@
+body {
+  font-family: sans-serif;
+  background: #f4f7fb;
+  margin: 0;
+  direction: rtl;
+}
+
+.header {
+  background: #2f80ed;
+  color: #fff;
+  padding: 16px 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.header p {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+input, select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.radio-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+button {
+  margin-top: 16px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  background: #2f80ed;
+  color: #fff;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.status {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #666;
+}
+
+#commentsList {
+  font-size: 14px;
+}
+
+.comment-item {
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.comment-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.comment-meta small {
+  color: #777;
+  font-size: 12px;
+}
+
+.comment-actions button {
+  margin-left: 4px;
+  font-size: 12px;
+  padding: 6px 10px;
+}
