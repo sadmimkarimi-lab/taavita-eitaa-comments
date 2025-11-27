@@ -190,4 +190,107 @@
     function saveName() {
       const val = nameInput.value.trim();
       if (val) {
-        localStorage
+        localStorage.setItem(NAME_KEY, val);
+        nameStatus.textContent = "نام ذخیره شد ✅";
+      } else {
+        nameStatus.textContent = "برای نمایش نام، یک نام وارد کنید.";
+      }
+    }
+    nameInput.addEventListener("blur", saveName);
+    loadName();
+
+    // لود لیست کامنت‌ها
+    let lastRenderCount = 0;
+
+    async function loadComments(scrollToBottom = false) {
+      try {
+        const res = await fetch("/api/comments/list?postKey=" + encodeURIComponent(roomId));
+        const data = await res.json();
+        if (!data.ok) {
+          chatStatus.textContent = "خطا در دریافت کامنت‌ها";
+          return;
+        }
+
+        const comments = data.comments || [];
+        messagesEl.innerHTML = "";
+
+        comments.forEach((c) => {
+          const div = document.createElement("div");
+          div.className = "message";
+          const date = new Date(c.createdAt || Date.now());
+          div.innerHTML = `
+            <div class="meta">${c.name || "کاربر"} | ${date.toLocaleString("fa-IR")}</div>
+            <div class="text">${escapeHtml(c.text || "")}</div>
+          `;
+          messagesEl.appendChild(div);
+        });
+
+        if (scrollToBottom || comments.length !== lastRenderCount) {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+        lastRenderCount = comments.length;
+        chatStatus.textContent = comments.length
+          ? "برای مشاهده‌ی پیام‌های جدید، صفحه هر چند ثانیه یکبار به‌روز می‌شود."
+          : "اولین نفری باش که کامنت می‌گذارد ✨";
+      } catch (e) {
+        console.error(e);
+        chatStatus.textContent = "خطا در اتصال به سرور.";
+      }
+    }
+
+    // کمک برای جلوگیری از اینجکشن ساده
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    // ارسال کامنت
+    async function sendComment() {
+      const name = nameInput.value.trim() || "کاربر مهمان";
+      const text = msgInput.value.trim();
+
+      if (!text) return;
+
+      sendBtn.disabled = true;
+      chatStatus.textContent = "در حال ارسال نظر...";
+
+      try {
+        const res = await fetch("/api/comments/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ postKey: roomId, text, name })
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          chatStatus.textContent = "خطا در ارسال نظر: " + (data.error || "نامشخص");
+        } else {
+          msgInput.value = "";
+          chatStatus.textContent = "نظر شما ثبت شد ✅";
+          loadComments(true);
+        }
+      } catch (e) {
+        console.error(e);
+        chatStatus.textContent = "خطا در اتصال به سرور.";
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    sendBtn.addEventListener("click", sendComment);
+
+    // ارسال با Enter (Shift+Enter برای خط جدید)
+    msgInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendComment();
+      }
+    });
+
+    // بارگذاری اولیه و رفرش دوره‌ای
+    loadComments(true);
+    setInterval(loadComments, 8000);
+  </script>
+</body>
+</html>
