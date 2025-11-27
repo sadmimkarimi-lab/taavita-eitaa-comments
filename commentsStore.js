@@ -1,67 +1,28 @@
 // commentsStore.js
-// ذخیره‌ی کامنت‌ها در Upstash Redis
+// نسخه ساده: ذخیره در حافظه سرور (برای تست و نسخه اول)
+// بعداً همین توابع رو به Redis وصل می‌کنیم.
 
-import { Redis } from "@upstash/redis";
+let comments = [];
 
-// این‌ها رو قبلاً توی Vercel ست کردی
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+/**
+ * اضافه کردن یک کامنت جدید
+ */
+export function addComment(comment) {
+  comments.push(comment);
+}
 
-// اگر اشتباه تنظیم شده باشن، این لاگ میاد توی لاگ سرور
-if (!redisUrl || !redisToken) {
-  console.error(
-    "❌ متغیرهای محیطی UPSTASH_REDIS_REST_URL یا UPSTASH_REDIS_REST_TOKEN تنظیم نشده‌اند."
+/**
+ * گرفتن کامنت‌ها بر اساس postKey
+ */
+export function getCommentsByPostKey(postKey) {
+  return comments.filter((c) => c.postKey === postKey);
+}
+
+/**
+ * حذف یک کامنت بر اساس postKey و id
+ */
+export function deleteComment(postKey, commentId) {
+  comments = comments.filter(
+    (c) => !(c.postKey === postKey && c.id === commentId)
   );
-}
-
-export const redis =
-  redisUrl && redisToken
-    ? new Redis({
-        url: redisUrl,
-        token: redisToken
-      })
-    : null;
-
-// مدت نگه‌داری کامنت‌ها (۶ ماه)
-const COMMENTS_TTL_SECONDS = 60 * 60 * 24 * 180;
-
-/**
- * اضافه کردن یک کامنت جدید به Redis
- */
-export async function addComment(comment) {
-  if (!redis) {
-    throw new Error("Redis تنظیم نشده است");
-  }
-
-  const key = `comments:${comment.postKey}`;
-
-  // هر کامنت را به انتهای لیست اضافه می‌کنیم
-  await redis.rpush(key, JSON.stringify(comment));
-
-  // هر بار TTL را تمدید می‌کنیم (۶ ماه)
-  await redis.expire(key, COMMENTS_TTL_SECONDS);
-}
-
-/**
- * گرفتن کامنت‌های مربوط به یک postKey
- */
-export async function getCommentsByPostKey(postKey) {
-  if (!redis) {
-    throw new Error("Redis تنظیم نشده است");
-  }
-
-  const key = `comments:${postKey}`;
-
-  // همه‌ی آیتم‌های لیست
-  const items = await redis.lrange(key, 0, -1);
-
-  return items
-    .map((raw) => {
-      try {
-        return typeof raw === "string" ? JSON.parse(raw) : raw;
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
 }
