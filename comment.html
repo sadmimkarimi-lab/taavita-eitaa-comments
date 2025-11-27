@@ -175,14 +175,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const roomId = params.get("room");
 
   if (!roomId) {
-    alert("خطا: roomId در لینک نیست");
+    alert("خطا: شناسه اتاق پیدا نشد");
     return;
   }
 
-  const commentsBox = document.getElementById("comments");
-  const nameInput = document.getElementById("name");
-  const messageInput = document.getElementById("message");
+  const nameInput = document.getElementById("nameInput");
+  const messageInput = document.getElementById("messageInput");
+  const messagesBox = document.getElementById("messages");
   const sendBtn = document.getElementById("sendBtn");
+  const roomInfo = document.getElementById("roomInfo");
+  const chatStatus = document.getElementById("chatStatus");
+
+  roomInfo.textContent = "شناسه اتاق: " + roomId;
 
   // -------------------------------
   // 📌 دریافت لیست کامنت‌ها
@@ -190,31 +194,29 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadComments() {
     try {
       const res = await fetch(`/api/comments/list?roomId=${roomId}`);
-      if (!res.ok) throw new Error("List failed");
-
       const data = await res.json();
 
-      commentsBox.innerHTML = "";
+      messagesBox.innerHTML = "";
+
       if (!data.comments || data.comments.length === 0) {
-        commentsBox.innerHTML = "<p class='empty'>اولین کامنت را شما ثبت کنید ✨</p>";
+        messagesBox.innerHTML = "<p style='text-align:center;opacity:0.6'>اولین نفر باش که کامنت می‌گذارد ✨</p>";
         return;
       }
 
       data.comments.forEach((c) => {
         const div = document.createElement("div");
-        div.className = "comment-item";
+        div.className = "message";
         div.innerHTML = `
-          <div class="c-header">
-              <span class="c-name">${c.name}</span>
-              <span class="c-time">${new Date(c.timestamp).toLocaleString("fa-IR")}</span>
-          </div>
-          <div class="c-body">${c.message}</div>
+          <div class="meta">${c.name} | ${new Date(c.timestamp).toLocaleString("fa-IR")}</div>
+          <div class="text">${c.message}</div>
         `;
-        commentsBox.appendChild(div);
+        messagesBox.appendChild(div);
       });
 
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+
     } catch (err) {
-      commentsBox.innerHTML = "<p class='error'>خطا در دریافت کامنت‌ها</p>";
+      chatStatus.textContent = "خطا در دریافت کامنت‌ها";
     }
   }
 
@@ -227,32 +229,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!message) return;
 
+    sendBtn.disabled = true;
+
     try {
       const res = await fetch("/api/comments/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          roomId,
-          name,
-          message
-        })
+        body: JSON.stringify({ roomId, name, message })
       });
 
-      if (!res.ok) throw new Error("Add failed");
+      if (!res.ok) throw new Error("Send failed");
 
       messageInput.value = "";
       loadComments();
+      chatStatus.textContent = "";
 
     } catch (err) {
-      alert("خطا در ارسال پیام");
+      chatStatus.textContent = "خطا در ارسال پیام";
     }
+
+    sendBtn.disabled = false;
   }
 
   sendBtn.onclick = sendComment;
 
-  // رفرش هر ۳ ثانیه
+  // بروزرسانی هر ۲ ثانیه
   loadComments();
-  setInterval(loadComments, 3000);
+  setInterval(loadComments, 2000);
 
 });
 </script>
