@@ -164,7 +164,16 @@
       return params.get("room") || "default_room";
     }
 
+    // حالت مدیر (اگر ?admin=1 در آدرس باشد)
+    function isAdminMode() {
+      const params = new URLSearchParams(window.location.search);
+      const val = params.get("admin");
+      return val === "1" || val === "true";
+    }
+
     const roomId = getRoomId();
+    const adminMode = isAdminMode();
+
     const roomInfoEl = document.getElementById("roomInfo");
     const nameInput = document.getElementById("nameInput");
     const nameStatus = document.getElementById("nameStatus");
@@ -174,7 +183,8 @@
     const messagesEl = document.getElementById("messages");
 
     // نمایش اطلاعات اتاق
-    roomInfoEl.textContent = "شناسه‌ی اتاق: " + roomId;
+    roomInfoEl.textContent =
+      "شناسه‌ی اتاق: " + roomId + (adminMode ? " (حالت مدیریت)" : "");
 
     // ذخیره و لود نام کاربر در localStorage
     const NAME_KEY = "eitaa_comment_name";
@@ -184,7 +194,8 @@
         nameInput.value = saved;
         nameStatus.textContent = "نام شما ذخیره شده است ✅";
       } else {
-        nameStatus.textContent = "نام خود را بنویسید تا در کامنت‌ها نمایش داده شود.";
+        nameStatus.textContent =
+          "نام خود را بنویسید تا در کامنت‌ها نمایش داده شود.";
       }
     }
     function saveName() {
@@ -204,7 +215,9 @@
 
     async function loadComments(scrollToBottom = false) {
       try {
-        const res = await fetch("/api/comments/list?postKey=" + encodeURIComponent(roomId));
+        const res = await fetch(
+          "/api/comments/list?postKey=" + encodeURIComponent(roomId)
+        );
         const data = await res.json();
         if (!data.ok) {
           chatStatus.textContent = "خطا در دریافت کامنت‌ها";
@@ -218,20 +231,58 @@
           const div = document.createElement("div");
           div.className = "message";
           const date = new Date(c.createdAt || Date.now());
-          div.innerHTML = `
-            <div class="meta">${c.name || "کاربر"} | ${date.toLocaleString("fa-IR")}</div>
+
+          let inner = `
+            <div class="meta">
+              ${c.name || "کاربر"} | ${date.toLocaleString("fa-IR")}
+            </div>
             <div class="text">${escapeHtml(c.text || "")}</div>
           `;
+
+          // اگر در حالت مدیر هستیم، دکمه حذف هم اضافه کن
+          if (adminMode && c.id) {
+            inner += `
+              <div style="margin-top:4px;">
+                <button class="delete-btn" data-id="${c.id}">
+                  حذف این پیام
+                </button>
+              </div>
+            `;
+          }
+
+          div.innerHTML = inner;
           messagesEl.appendChild(div);
         });
+
+        // وصل کردن رویداد حذف برای دکمه‌ها
+        if (adminMode) {
+          const deleteButtons =
+            messagesEl.querySelectorAll(".delete-btn");
+          deleteButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const id = btn.getAttribute("data-id");
+              if (id) {
+                deleteCommentClient(id);
+              }
+            });
+          });
+        }
 
         if (scrollToBottom || comments.length !== lastRenderCount) {
           messagesEl.scrollTop = messagesEl.scrollHeight;
         }
         lastRenderCount = comments.length;
-        chatStatus.textContent = comments.length
-          ? "برای مشاهده‌ی پیام‌های جدید، صفحه هر چند ثانیه یکبار به‌روز می‌شود."
-          : "اولین نفری باش که کامنت می‌گذارد ✨";
+
+        if (!comments.length) {
+          chatStatus.textContent =
+            "اولین نفری باش که کامنت می‌گذارد ✨";
+        } else if (adminMode) {
+          chatStatus.textContent =
+            "حالت مدیریت فعال است؛ می‌توانید پیام‌ها را حذف کنید.";
+        } else {
+          chatStatus.textContent =
+            "برای مشاهده‌ی پیام‌های جدید، صفحه هر چند ثانیه یکبار به‌روز می‌شود.";
+        }
       } catch (e) {
         console.error(e);
         chatStatus.textContent = "خطا در اتصال به سرور.";
@@ -246,9 +297,35 @@
         .replace(/>/g, "&gt;");
     }
 
+    // حذف کامنت از سمت کلاینت
+    async function deleteCommentClient(commentId) {
+      const ok = confirm("این پیام حذف شود؟");
+      if (!ok) return;
+
+      try {
+        const res = await fetch("/api/comments/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ postKey: roomId, commentId })
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          chatStatus.textContent =
+            "خطا در حذف پیام: " + (data.error || "نامشخص");
+        } else {
+          chatStatus.textContent = "پیام حذف شد ✅";
+          loadComments(true);
+        }
+      } catch (e) {
+        console.error(e);
+        chatStatus.textContent = "خطا در اتصال به سرور هنگام حذف.";
+      }
+    }
+
     // ارسال کامنت
     async function sendComment() {
-      const name = nameInput.value.trim() || "کاربر مهمان";
+      const name =
+        nameInput.value.trim() || "کاربر مهمان";
       const text = msgInput.value.trim();
 
       if (!text) return;
@@ -264,7 +341,9 @@
         });
         const data = await res.json();
         if (!data.ok) {
-          chatStatus.textContent = "خطا در ارسال نظر: " + (data.error || "نامشخص");
+          chatStatus.textContent =
+            "خطا در ارسال نظر: " +
+            (data.error || "نامشخص");
         } else {
           msgInput.value = "";
           chatStatus.textContent = "نظر شما ثبت شد ✅";
