@@ -1,55 +1,63 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <title>پنل کامنت‌های ایتا – طاویتا</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/public/style.css" />
-</head>
-<body>
-  <header class="header">
-    <h1>💬 پنل کامنت ایتا</h1>
-    <p>ساخت و مدیریت لینک‌های کامنت برای پست‌های کانال</p>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <title>ساخت اتاق کامنت ایتا – Taavita</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="page">
+    <div class="container">
+      <h1 class="title">ساخت اتاق کامنت برای ایتا</h1>
+      <p class="hint">
+        این صفحه برای صاحب کانال است. برای هر پست، یک اتاق کامنت بساز و
+        لینک آن را در ربات ایتا ثبت کن.
+      </p>
 
-  <main class="container">
-    <section class="card">
-      <h2>ایجاد اتاق کامنت جدید</h2>
+      <form id="roomForm" class="card">
+        <label class="field">
+          <span class="label">عنوان اتاق (اختیاری):</span>
+          <input
+            id="roomTitle"
+            type="text"
+            placeholder="مثلاً: نظرات پست تخفیف ویژه"
+          />
+        </label>
 
-      <label>نوع کامنت:</label>
-      <div class="radio-row">
-        <label>
-          <input type="radio" name="commentType" value="public" checked />
-          عمومی
+        <button type="submit" class="btn primary">
+          ساخت لینک اتاق کامنت
+        </button>
+      </form>
+
+      <div id="resultBox" class="card hidden">
+        <h2 class="subtitle">اتاق کامنت ساخته شد ✅</h2>
+        <p class="hint">
+          این لینک را در ربات ایتا به عنوان «لینک کامنت» ثبت کن.
+        </p>
+
+        <label class="field">
+          <span class="label">شناسه اتاق:</span>
+          <input
+            id="roomIdOutput"
+            type="text"
+            class="mono"
+            readonly
+          />
         </label>
-        <label>
-          <input type="radio" name="commentType" value="private" />
-          خصوصی
+
+        <label class="field">
+          <span class="label">لینک صفحه‌ی کامنت:</span>
+          <input
+            id="commentLink"
+            type="url"
+            class="mono"
+            readonly
+          />
         </label>
+
+        <button id="copyLinkBtn" class="btn">کپی لینک</button>
       </div>
+    </div>
 
-      <label>لینک پست ایتا:</label>
-      <input id="postLink" type="text" placeholder="مثلاً: https://eitaa.com/your_channel/1234" />
-
-      <label>عنوان اتاق کامنت:</label>
-      <input id="commentTitle" type="text" placeholder="مثلاً: کامنت پست ۱۲۳۴ – تخفیف ویژه" />
-
-      <label>حداکثر پیام هر کاربر (اختیاری):</label>
-      <input id="maxMessagesPerUser" type="number" min="0" placeholder="مثلاً 10 - خالی یعنی نامحدود" />
-
-      <label>کلمات فیلتر شده (با کاما جدا کن):</label>
-      <input id="badWords" type="text" placeholder="مثلاً: تبلیغ, فحش1, فحش2" />
-
-      <button id="createBtn">ایجاد اتاق کامنت</button>
-      <p id="createStatus" class="status"></p>
-    </section>
-
-    <section class="card">
-      <h2>لیست اتاق‌های کامنت ساخته شده</h2>
-      <div id="commentsList"></div>
-    </section>
-  </main>
-
-  <script src="/js/app.js"></script>
-</body>
+    <script src="./app.js" defer></script>
+  </body>
 </html>
