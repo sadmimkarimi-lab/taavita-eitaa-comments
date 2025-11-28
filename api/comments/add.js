@@ -1,32 +1,33 @@
-import { Redis } from "@upstash/redis";
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+// api/comments/add.js
+import { addCommentToRoom } from "../../commentsStore.js";
 
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
+      return res
+        .status(405)
+        .json({ ok: false, error: "Method not allowed" });
     }
 
-    const { roomId, name, message, timestamp } = req.body;
+    const { roomId, name, message } = req.body || {};
 
-    if (!roomId || !message)
-      return res.status(400).json({ error: "Missing roomId or message" });
+    if (!roomId || !message || !String(message).trim()) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "roomId و message الزامی هستند." });
+    }
 
-    const comment = {
-      id: Date.now(),
-      name: name || "کاربر ناشناس",
-      message,
-      timestamp: timestamp || new Date().toISOString(),
-    };
+    const comment = await addCommentToRoom(
+      String(roomId),
+      name,
+      message
+    );
 
-    await redis.lpush(`comments:${roomId}`, JSON.stringify(comment));
-    return res.status(200).json({ success: true, comment });
+    return res.status(200).json({ ok: true, comment });
   } catch (err) {
-    console.error("Add Error:", err);
-    return res.status(500).json({ error: "Server error" });
+    console.error("Error in /api/comments/add:", err);
+    return res
+      .status(500)
+      .json({ ok: false, error: "خطای سرور در ثبت کامنت" });
   }
 }
