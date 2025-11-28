@@ -1,170 +1,117 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-body.page {
+body {
+  font-family: sans-serif;
+  background: #f4f7fb;
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background: #f4f5fb;
-  color: #111827;
-}
-
-.container {
-  max-width: 640px;
-  margin: 24px auto 40px;
-  padding: 0 16px;
-}
-
-.title {
-  margin: 0 0 6px;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.subtitle {
-  margin: 0 0 8px;
-  font-size: 17px;
-  font-weight: 600;
+  direction: rtl;
 }
 
 .header {
-  margin-bottom: 12px;
+  background: #2f80ed;
+  color: #fff;
+  padding: 16px 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.header p {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+  display: grid;
+  gap: 16px;
 }
 
 .card {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 14px 14px 10px;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-  margin-bottom: 14px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 10px;
+.card h2 {
+  margin-top: 0;
+  font-size: 16px;
 }
 
-.label {
-  font-size: 13px;
-  color: #4b5563;
-  margin-bottom: 4px;
-}
-
-input[type="text"],
-input[type="url"],
-textarea {
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
-  padding: 8px 10px;
+label {
+  display: block;
+  margin-top: 10px;
   font-size: 14px;
-  outline: none;
 }
 
-input:focus,
-textarea:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+input, select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
-textarea {
-  resize: vertical;
+.radio-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+  font-size: 14px;
 }
 
-.btn {
+button {
+  margin-top: 16px;
+  padding: 10px 18px;
   border-radius: 999px;
   border: none;
-  padding: 8px 16px;
   font-size: 14px;
   cursor: pointer;
-  background: #e5e7eb;
-  color: #111827;
+  background: #2f80ed;
+  color: #fff;
 }
 
-.btn.primary {
-  background: #2563eb;
-  color: #ffffff;
+button:hover {
+  opacity: 0.9;
 }
 
-.btn:active {
-  transform: translateY(1px);
-}
-
-.hint {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 4px;
-}
-
-.mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+.status {
+  margin-top: 8px;
   font-size: 13px;
+  color: #666;
 }
 
-.hidden {
-  display: none;
+#commentsList {
+  font-size: 14px;
 }
 
-/* messages */
-
-.messages {
-  max-height: 60vh;
-  overflow-y: auto;
-  margin-bottom: 10px;
-}
-
-.message {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 8px 10px;
-  margin-bottom: 8px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-}
-
-.meta {
+.comment-item {
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
-  color: #6b7280;
-  margin-bottom: 4px;
+  gap: 8px;
 }
 
-.meta-name {
-  font-weight: 600;
+.comment-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.meta-time {
-  margin-right: 8px;
+.comment-meta small {
+  color: #777;
+  font-size: 12px;
 }
 
-.text {
-  font-size: 14px;
-  white-space: pre-wrap;
-}
-
-.empty {
-  text-align: center;
-  font-size: 13px;
-  color: #9ca3af;
-  margin: 10px 0;
-}
-
-.comment-form {
-  position: sticky;
-  bottom: 0;
-}
-
-.delete-btn {
-  border: none;
-  background: #ef4444;
-  color: #ffffff;
-  border-radius: 999px;
-  padding: 2px 10px;
-  font-size: 11px;
-  cursor: pointer;
+.comment-actions button {
+  margin-left: 4px;
+  font-size: 12px;
+  padding: 6px 10px;
 }
