@@ -1,263 +1,257 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <title>اتاق کامنت – طاویتا</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f4f7fb;
-      color: #222;
-      direction: rtl;
-    }
-    .header {
-      background: #2f80ed;
-      color: #fff;
-      padding: 12px 16px;
-      text-align: center;
-    }
-    .header h1 {
-      margin: 0;
-      font-size: 18px;
-    }
-    .header p {
-      margin: 4px 0 0 0;
-      font-size: 12px;
-      opacity: 0.9;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 8px 12px 16px;
-      box-sizing: border-box;
-    }
-    .room-info {
-      background: #fff;
-      border-radius: 12px;
-      padding: 8px 10px;
-      margin-top: 8px;
-      font-size: 12px;
-      color: #555;
-    }
-    .name-box {
-      background: #fff;
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin-top: 8px;
-      font-size: 13px;
-    }
-    .name-box input {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      font-size: 13px;
-      box-sizing: border-box;
-    }
-    .chat-box {
-      background: #fff;
-      border-radius: 12px;
-      margin-top: 10px;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - 210px);
-      max-height: 520px;
-      box-sizing: border-box;
-    }
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-    .message {
-      margin-bottom: 8px;
-      padding: 6px 8px;
-      border-radius: 10px;
-      background: #f1f5ff;
-      font-size: 13px;
-    }
-    .message .meta {
-      font-size: 11px;
-      color: #666;
-      margin-bottom: 4px;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>اتاق کامنت – Taavita</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="page">
+    <div class="container">
+      <header class="header">
+        <div>
+          <h1 class="title">اتاق کامنت</h1>
+          <p id="roomInfo" class="hint"></p>
+        </div>
+      </header>
 
-.delete-btn {
-      border: none;
-      background: #ff4b4b;
-      color: #fff;
-      border-radius: 999px;
-      padding: 2px 8px;
-      font-size: 11px;
-      cursor: pointer;
-    }
-    
-    .message .text {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    .input-row {
-      border-top: 1px solid #eee;
-      padding-top: 8px;
-      margin-top: 8px;
-      display: flex;
-      flex-direction: row;
-      gap: 6px;
-      align-items: flex-end;
-    }
-    .input-row textarea {
-      flex: 1;
-      resize: none;
-      min-height: 36px;
-      max-height: 90px;
-      padding: 6px 8px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      font-size: 13px;
-      box-sizing: border-box;
-    }
-    .input-row button {
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: none;
-      background: #2f80ed;
-      color: #fff;
-      font-size: 13px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .input-row button:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
-    .status {
-      margin-top: 4px;
-      font-size: 11px;
-      color: #777;
-    }
-  </style>
-</head>
-<body>
-  <header class="header">
-    <h1>اتاق کامنت 💬</h1>
-    <p>در حال گفت‌وگو با بقیه‌ی اعضای کانال</p>
-  </header>
+      <main>
+        <section id="messages" class="messages"></section>
 
-  <main class="container">
-    <div class="room-info">
-      <span id="roomInfo">در حال بارگذاری اتاق...</span>
+        <p id="chatStatus" class="hint"></p>
+
+        <form id="commentForm" class="card comment-form">
+          <label class="field">
+            <span class="label">نام شما:</span>
+            <input
+              id="nameInput"
+              type="text"
+              placeholder="مثلاً الهه"
+            />
+          </label>
+
+          <label class="field">
+            <span class="label">متن پیام:</span>
+            <textarea
+              id="messageInput"
+              rows="3"
+              placeholder="نظرت را بنویس..."
+            ></textarea>
+          </label>
+
+          <button
+            type="button"
+            id="sendBtn"
+            class="btn primary"
+          >
+            ارسال
+          </button>
+        </form>
+      </main>
     </div>
 
-    <div class="name-box">
-      <label for="nameInput" style="display:block; margin-bottom:4px;">نام شما:</label>
-      <input id="nameInput" type="text" placeholder="مثلاً الهه" />
-      <div class="status" id="nameStatus"></div>
-    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const roomId = params.get("room");
+        const title = params.get("title") || "";
+        const adminMode =
+          params.get("admin") === "1" || params.get("admin") === "true";
 
-    <section class="chat-box">
-      <div id="messages" class="messages"></div>
+        const roomInfo = document.getElementById("roomInfo");
+        const messagesBox = document.getElementById("messages");
+        const chatStatus = document.getElementById("chatStatus");
+        const nameInput = document.getElementById("nameInput");
+        const messageInput = document.getElementById("messageInput");
+        const sendBtn = document.getElementById("sendBtn");
 
-      <div class="input-row">
-        <textarea id="messageInput" rows="2" placeholder="متن نظر خود را بنویسید..."></textarea>
-        <button id="sendBtn">ارسال</button>
-      </div>
-      <div class="status" id="chatStatus"></div>
-    </section>
-  </main>
+        if (!roomId) {
+          roomInfo.textContent =
+            "شناسه اتاق پیدا نشد. لینک را بررسی کنید.";
+          sendBtn.disabled = true;
+          return;
+        }
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+        let info = "شناسه اتاق: " + roomId;
+        if (title) info = title + " | " + info;
+        if (adminMode) info += " | حالت مدیریت فعال است";
+        roomInfo.textContent = info;
 
-  const params = new URLSearchParams(window.location.search);
-  const roomId = params.get("room");
+        // ذخیره نام در localStorage
+        const NAME_KEY = "eitaa_comment_name";
+        try {
+          const savedName = localStorage.getItem(NAME_KEY);
+          if (savedName) {
+            nameInput.value = savedName;
+          }
+        } catch {}
 
-  if (!roomId) {
-    alert("خطا: شناسه اتاق پیدا نشد");
-    return;
-  }
+        function saveName() {
+          const n = nameInput.value.trim();
+          if (!n) return;
+          try {
+            localStorage.setItem(NAME_KEY, n);
+          } catch {}
+        }
+        nameInput.addEventListener("blur", saveName);
 
-  const nameInput = document.getElementById("nameInput");
-  const messageInput = document.getElementById("messageInput");
-  const messagesBox = document.getElementById("messages");
-  const sendBtn = document.getElementById("sendBtn");
-  const roomInfo = document.getElementById("roomInfo");
-  const chatStatus = document.getElementById("chatStatus");
+        function createMessageElement(c) {
+          const wrapper = document.createElement("div");
+          wrapper.className = "message";
 
-  roomInfo.textContent = "شناسه اتاق: " + roomId;
+          const meta = document.createElement("div");
+          meta.className = "meta";
 
-  // -------------------------------
-  // 📌 دریافت لیست کامنت‌ها
-  // -------------------------------
-  async function loadComments() {
-    try {
-      const res = await fetch(`/api/comments/list?roomId=${roomId}`);
-      const data = await res.json();
+          const nameSpan = document.createElement("span");
+          nameSpan.className = "meta-name";
+          nameSpan.textContent = c.name || "کاربر";
 
-      messagesBox.innerHTML = "";
+          const timeSpan = document.createElement("span");
+          timeSpan.className = "meta-time";
+          try {
+            const d = new Date(c.timestamp);
+            timeSpan.textContent = d.toLocaleString("fa-IR");
+          } catch {
+            timeSpan.textContent = "";
+          }
 
-      if (!data.comments || data.comments.length === 0) {
-        messagesBox.innerHTML = "<p style='text-align:center;opacity:0.6'>اولین نفر باش که کامنت می‌گذارد ✨</p>";
-        return;
-      }
+          meta.appendChild(nameSpan);
+          meta.appendChild(timeSpan);
 
-      data.comments.forEach((c) => {
-        const div = document.createElement("div");
-        div.className = "message";
-        div.innerHTML = `
-          <div class="meta">${c.name} | ${new Date(c.timestamp).toLocaleString("fa-IR")}</div>
-          <div class="text">${c.message}</div>
-        `;
-        messagesBox.appendChild(div);
+          const text = document.createElement("div");
+          text.className = "text";
+          text.textContent = c.message || "";
+
+          wrapper.appendChild(meta);
+          wrapper.appendChild(text);
+
+          // دکمه حذف در حالت مدیر
+          if (adminMode && c.id) {
+            const delBox = document.createElement("div");
+            delBox.style.marginTop = "4px";
+
+            const btn = document.createElement("button");
+            btn.className = "delete-btn";
+            btn.textContent = "حذف پیام";
+            btn.addEventListener("click", () => {
+              handleDelete(c.id);
+            });
+
+            delBox.appendChild(btn);
+            wrapper.appendChild(delBox);
+          }
+
+          return wrapper;
+        }
+
+        async function loadComments(scrollToBottom = false) {
+          try {
+            const res = await fetch(
+              `/api/comments/list?roomId=${encodeURIComponent(
+                roomId
+              )}`
+            );
+            const data = await res.json();
+            if (!data.ok) {
+              chatStatus.textContent =
+                data.error || "خطا در دریافت کامنت‌ها";
+              return;
+            }
+
+            const comments = data.comments || [];
+            messagesBox.innerHTML = "";
+
+            if (!comments.length) {
+              messagesBox.innerHTML =
+                "<p class='empty'>اولین نفر باش که نظر می‌گذارد ✨</p>";
+              return;
+            }
+
+            comments.forEach((c) => {
+              const el = createMessageElement(c);
+              messagesBox.appendChild(el);
+            });
+
+            if (scrollToBottom) {
+              messagesBox.scrollTop = messagesBox.scrollHeight;
+            }
+
+            chatStatus.textContent = "";
+          } catch (err) {
+            console.error(err);
+            chatStatus.textContent = "خطا در اتصال به سرور.";
+          }
+        }
+
+        async function sendComment() {
+          const name =
+            nameInput.value.trim() || "کاربر";
+          const message = messageInput.value.trim();
+          if (!message) return;
+
+          sendBtn.disabled = true;
+          chatStatus.textContent = "در حال ارسال...";
+
+          try {
+            const res = await fetch("/api/comments/add", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ roomId, name, message })
+            });
+
+            const data = await res.json();
+            if (!data.ok) {
+              chatStatus.textContent =
+                data.error || "خطا در ارسال نظر";
+            } else {
+              messageInput.value = "";
+              saveName();
+              await loadComments(true);
+              chatStatus.textContent = "نظر شما ثبت شد ✅";
+            }
+          } catch (err) {
+            console.error(err);
+            chatStatus.textContent = "خطا در اتصال به سرور.";
+          } finally {
+            sendBtn.disabled = false;
+          }
+        }
+
+        async function handleDelete(commentId) {
+          if (!confirm("این پیام حذف شود؟")) return;
+
+          try {
+            const res = await fetch("/api/comments/delete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ roomId, commentId })
+            });
+            const data = await res.json();
+            if (!data.ok) {
+              chatStatus.textContent =
+                data.error || "خطا در حذف پیام";
+            } else {
+              chatStatus.textContent = "پیام حذف شد ✅";
+              await loadComments(true);
+            }
+          } catch (err) {
+            console.error(err);
+            chatStatus.textContent = "خطا در اتصال به سرور.";
+          }
+        }
+
+        sendBtn.addEventListener("click", sendComment);
+
+        messageInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendComment();
+          }
+        });
+
+        // بارگذاری اولیه و رفرش دوره‌ای
+        loadComments(true);
+        setInterval(loadComments, 5000);
       });
-
-      messagesBox.scrollTop = messagesBox.scrollHeight;
-
-    } catch (err) {
-      chatStatus.textContent = "خطا در دریافت کامنت‌ها";
-    }
-  }
-
-  // -------------------------------
-  // 📌 ارسال کامنت
-  // -------------------------------
-  async function sendComment() {
-    const name = nameInput.value.trim() || "کاربر";
-    const message = messageInput.value.trim();
-
-    if (!message) return;
-
-    sendBtn.disabled = true;
-
-    try {
-      const res = await fetch("/api/comments/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomId, name, message })
-      });
-
-      if (!res.ok) throw new Error("Send failed");
-
-      messageInput.value = "";
-      loadComments();
-      chatStatus.textContent = "";
-
-    } catch (err) {
-      chatStatus.textContent = "خطا در ارسال پیام";
-    }
-
-    sendBtn.disabled = false;
-  }
-
-  sendBtn.onclick = sendComment;
-
-  // بروزرسانی هر ۲ ثانیه
-  loadComments();
-  setInterval(loadComments, 2000);
-
-});
-</script>
-</body>
+    </script>
+  </body>
 </html>
