@@ -1,12 +1,9 @@
 {
-  "name": "taavita-eitaa-comments",
+  "name": "eitaa-comments",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "dev": "vercel dev",
-    "start": "vercel dev"
-  },
+  "type": "module",
   "dependencies": {
-    "@upstash/redis": "^1.32.0"
+    "@upstash/redis": "^1.31.3"
   }
 }
